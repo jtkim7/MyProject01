@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f5f7ff">
+  <title>구구단 계산기</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+      color: #20233a;
+      background: #f5f7ff;
+      font-synthesis: none;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      height: 100vh;
+      height: 100svh;
+      min-height: 400px;
+      margin: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: clamp(8px, 2vh, 16px) 18px;
+      background:
+        radial-gradient(ellipse at 12% 8%, #e1e9ff 0, transparent 34%),
+        radial-gradient(ellipse at 92% 88%, #eee4ff 0, transparent 32%),
+        #f7f8fc;
+    }
+
+    .calculator {
+      width: min(100%, 520px);
+      overflow: hidden;
+      border: 1px solid #e8eaf3;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 24px 70px #27346b17;
+    }
+
+    .intro {
+      position: relative;
+      padding: clamp(20px, 4vh, 34px) 34px clamp(16px, 3vh, 26px);
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: #6558d9;
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .12em;
+    }
+
+    h1 { margin: 0; font-size: clamp(27px, 6vw, 36px); letter-spacing: -.05em; }
+    .description { margin: 10px 0 24px; color: #777b91; font-size: 15px; line-height: 1.6; }
+
+    form { display: flex; gap: 10px; }
+
+    .input-wrap {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      min-width: 0;
+      height: 54px;
+      padding: 0 15px;
+      border: 1px solid #e4e6ef;
+      border-radius: 13px;
+      background: #fbfbfe;
+      transition: border-color .2s, box-shadow .2s;
+    }
+
+    .input-wrap:focus-within {
+      border-color: #786be8;
+      box-shadow: 0 0 0 4px #786be81a;
+    }
+
+    input {
+      width: 100%;
+      min-width: 0;
+      border: 0;
+      outline: 0;
+      background: transparent;
+      color: #20233a;
+      font: inherit;
+      font-size: 17px;
+    }
+
+    input::placeholder { color: #a4a7b7; }
+    .unit { flex: 0 0 auto; color: #777b91; font-size: 15px; }
+
+    button {
+      flex: 0 0 auto;
+      min-width: 104px;
+      border: 0;
+      border-radius: 13px;
+      padding: 0 20px;
+      background: #6558d9;
+      color: #fff;
+      font: inherit;
+      font-weight: 750;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+
+    button:hover { background: #5145c4; transform: translateY(-1px); }
+    button:focus-visible { outline: 3px solid #aaa2ff; outline-offset: 3px; }
+
+    .close-button {
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      display: grid;
+      width: 34px;
+      min-width: 34px;
+      height: 34px;
+      place-items: center;
+      padding: 0;
+      border-radius: 10px;
+      background: #f1f2f8;
+      color: #777b91;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .close-button:hover { background: #e7e8f1; color: #34364c; }
+
+    .footer-actions { padding: 0 34px 22px; }
+
+    .footer-close-button {
+      width: 100%;
+      min-width: 0;
+      height: 42px;
+      border: 1px solid #e6e7f0;
+      border-radius: 12px;
+      background: #f7f7fb;
+      color: #55596f;
+    }
+
+    .footer-close-button:hover { background: #ededf6; color: #34364c; }
+
+    .message {
+      min-height: 21px;
+      margin: 9px 2px 0;
+      color: #d04454;
+      font-size: 13px;
+    }
+
+    .results {
+      display: none;
+      padding: clamp(14px, 3vh, 23px) 34px clamp(18px, 4vh, 30px);
+      border-top: 1px solid #f0f1f6;
+      background: #fcfcff;
+    }
+
+    .results.visible { display: block; animation: appear .25s ease-out; }
+
+    .results-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 15px;
+    }
+
+    h2 { margin: 0; font-size: 19px; letter-spacing: -.03em; }
+    .result-hint { color: #9396a8; font-size: 12px; }
+
+    .equations { display: grid; grid-template-columns: 1fr; gap: 5px; }
+
+    .equation {
+      padding: 8px 14px;
+      border: 1px solid #ececf5;
+      border-radius: 11px;
+      background: #fff;
+      text-align: left;
+      color: #55596f;
+      font-size: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .equation strong { color: #5549c9; font-weight: 800; }
+
+    @keyframes appear {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 420px) {
+      .intro { padding: 28px 22px 20px; }
+      .results { padding: 20px 22px 24px; }
+      .footer-actions { padding: 0 22px 18px; }
+      form { gap: 8px; }
+      button { min-width: 84px; padding: 0 13px; }
+      .equation { padding: 7px 12px; font-size: 13px; }
+    }
+
+    @media (max-height: 840px) {
+      body { padding-top: 10px; padding-bottom: 10px; }
+      .intro { padding: 16px 24px 12px; }
+      .close-button { top: 12px; right: 16px; }
+      .eyebrow { margin-bottom: 6px; }
+      .description { margin: 6px 0 14px; }
+      .input-wrap { height: 48px; }
+      .message { min-height: 16px; margin-top: 5px; }
+      .results { padding: 12px 24px 16px; }
+      .footer-actions { padding: 0 24px 12px; }
+      .footer-close-button { height: 36px; }
+      .results-heading { margin-bottom: 10px; }
+      .equations { gap: 3px; }
+      .equation { padding: 3px 10px; font-size: 13px; }
+    }
+
+    @media (max-height: 480px) {
+      .intro { padding-top: 10px; padding-bottom: 8px; }
+      .description { margin-bottom: 9px; }
+      .results { padding-top: 8px; padding-bottom: 10px; }
+      .equation { padding-top: 5px; padding-bottom: 5px; }
+    }
+
+    @media (max-height: 430px) {
+      body { padding: 6px 12px; }
+      .intro { padding: 8px 20px 6px; }
+      .close-button { top: 6px; right: 16px; width: 28px; min-width: 28px; height: 28px; }
+      .footer-actions { padding: 0 20px 6px; }
+      .footer-close-button { height: 32px; }
+      .eyebrow { margin-bottom: 3px; font-size: 11px; }
+      h1 { font-size: 24px; }
+      .description { margin: 4px 0 8px; font-size: 13px; line-height: 1.35; }
+      .input-wrap, button { height: 40px; }
+      .message { min-height: 14px; margin-top: 3px; font-size: 12px; }
+      .results { padding: 6px 20px 8px; }
+      .results-heading { margin-bottom: 4px; }
+      .results-heading h2 { font-size: 16px; }
+      .result-hint { font-size: 10px; }
+      .equations { gap: 1px; }
+      .equation { padding: 0 9px; font-size: 12px; line-height: 12px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="calculator">
+    <section class="intro" aria-labelledby="page-title">
+      <button class="close-button" id="close-button" type="button" aria-label="닫기" title="닫기">×</button>
+      <p class="eyebrow">MULTIPLICATION TABLE</p>
+      <h1 id="page-title">구구단 계산기</h1>
+      <p class="description">궁금한 단을 입력하면 1부터 9까지의 구구단을 보여드려요.</p>
+
+      <form id="dan-form" novalidate>
+        <label class="input-wrap" for="dan-input">
+          <input id="dan-input" name="dan" type="text" placeholder="예: 7" inputmode="numeric" autocomplete="off" aria-describedby="form-message">
+          <span class="unit">단</span>
+        </label>
+        <button type="submit">결과 보기</button>
+      </form>
+      <p class="message" id="form-message" role="alert" aria-live="polite"></p>
+    </section>
+
+    <section class="results" id="results" aria-live="polite" aria-label="구구단 결과">
+      <div class="results-heading">
+        <h2 id="result-title">7단</h2>
+        <span class="result-hint">1부터 9까지</span>
+      </div>
+      <div class="equations" id="equations"></div>
+    </section>
+    <div class="footer-actions">
+      <button class="footer-close-button" id="bottom-close-button" type="button">닫기</button>
+    </div>
+  </main>
+
+  <script>
+    const form = document.querySelector("#dan-form");
+    const input = document.querySelector("#dan-input");
+    const message = document.querySelector("#form-message");
+    const closeButton = document.querySelector("#close-button");
+    const bottomCloseButton = document.querySelector("#bottom-close-button");
+    const results = document.querySelector("#results");
+    const resultTitle = document.querySelector("#result-title");
+    const equations = document.querySelector("#equations");
+
+    function showResults(requireValue = false) {
+      const value = input.value.trim();
+
+      if (value === "") {
+        message.textContent = requireValue ? "단을 입력해 주세요." : "";
+        results.classList.remove("visible");
+        return;
+      }
+
+      if (!/^\d+$/.test(value)) {
+        message.textContent = "숫자만 입력해 주세요.";
+        results.classList.remove("visible");
+        input.select();
+        return;
+      }
+
+      const dan = Number(value);
+      if (!Number.isInteger(dan) || dan < 1 || dan > 9) {
+        message.textContent = "1~9까지만 입력해 주세요.";
+        results.classList.remove("visible");
+        input.select();
+        return;
+      }
+
+      message.textContent = "";
+      resultTitle.textContent = `${dan}단`;
+      equations.replaceChildren();
+
+      for (let multiplier = 1; multiplier <= 9; multiplier += 1) {
+        const item = document.createElement("div");
+        item.className = "equation";
+        item.innerHTML = `${dan} × ${multiplier} = <strong>${dan * multiplier}</strong>`;
+        equations.append(item);
+      }
+
+      results.classList.add("visible");
+    }
+
+    input.addEventListener("input", showResults);
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      showResults(true);
+      input.focus();
+    });
+
+    function closeWindow() {
+      window.close();
+      if (!window.closed) {
+        message.textContent = "브라우저에서 창을 직접 닫아 주세요.";
+      }
+    }
+
+    closeButton.addEventListener("click", closeWindow);
+    bottomCloseButton.addEventListener("click", closeWindow);
+  </script>
+</body>
+</html>
